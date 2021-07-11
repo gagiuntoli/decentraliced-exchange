@@ -1,15 +1,16 @@
 const Token = artifacts.require('./Token');
+import { toWei } from './util';
 
 require('chai')
 	.use(require('chai-as-promised'))
 	.should()
 
-contract('Token', (accounts) => {
+contract('Token', ([deployer, receiver]) => {
 
 	const name = 'Bitcoin Fake';
 	const symbol = 'BTF';
 	const decimals = '18';
-	const totalSupply = '1' + '0'.repeat(6) + '0'.repeat(18);
+	const totalSupply = toWei(1000000).toString();
 
 	let token;
 	beforeEach(async () => {
@@ -17,7 +18,7 @@ contract('Token', (accounts) => {
 		token = await Token.new();
 	});
 
-	describe('deployment', () => {
+	describe('Deploy the contract', () => {
 
 		it('tracks the name', async () => {
 			const result = await token.name();
@@ -31,7 +32,6 @@ contract('Token', (accounts) => {
 
 		it('tracks the decimals', async () => {
 			const result = await token.decimals();
-			console.log(result)
 			result.toString().should.equal(decimals);
 		});
 
@@ -39,5 +39,22 @@ contract('Token', (accounts) => {
 			const result = await token.totalSupply();
 			result.toString().should.equal(totalSupply);
 		});
-	})
+
+		it('assigns the total supply to the deployer', async () => {
+			const result = await token.balanceOf(deployer);
+			result.toString().should.equal(totalSupply);
+		});
+	});
+
+	describe('Send Tokens', () => {
+		it('transfers token balances', async () => {
+
+			const result = await token.transfer(receiver, toWei(100), { from: deployer });
+
+			const balanceOfDeployer = await token.balanceOf(deployer);
+			balanceOfDeployer.toString().should.equal(toWei(1000000 - 100).toString())
+			const balanceOfReceiver = await token.balanceOf(receiver);
+			balanceOfReceiver.toString().should.equal(toWei(100).toString())
+		})
+	});
 })
