@@ -42,6 +42,36 @@ contract('Exchange', ([deployer, feeAccount, user1]) => {
 		});
 	});
 
+	describe('withdraws Ethers funds', async () => {
+		let result;
+		beforeEach(async () => {
+			// user1 = +1 Ether
+			await exchange.depositEther({from: user1, value: toWei(1)});
+		});
+
+		describe('success', () => {
+			beforeEach(async () => {
+				// user1 = -1 Ether
+				result = await exchange.withdrawEther(toWei(1), { from: user1 });
+			});
+			it('withdraws Ether funds', async () => {
+				const balance = await exchange.tokens(ETHER_ADDRESS, user1);
+				balance.toString().should.equal(toWei(0).toString());
+			});
+
+			it('emits a `Withdraw` event', () => {
+				const log = result.logs[0];
+				log.event.should.equal('Withdraw');
+				const event = log.args;
+
+				event._token.toString().should.equal(ETHER_ADDRESS);
+				event._user.toString().should.equal(user1);
+				event._amount.toString().should.equal(toWei(1).toString());
+				event._balance.toString().should.equal(toWei(0).toString());
+			});
+		});
+	});
+
 	describe('depositing Ethers', () => {
 		let result;
 		beforeEach( async () => {
