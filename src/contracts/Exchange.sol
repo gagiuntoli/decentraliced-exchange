@@ -11,7 +11,7 @@
 // [ ] Fill order
 // [ ] Charge fees
 
-pragma solidity >= 0.8.0;
+pragma solidity >= 0.8.0 <= 0.8.4;
 
 import './Token.sol';
 import "../../node_modules/@openzeppelin/contracts/utils/math/SafeMath.sol";
@@ -22,6 +22,7 @@ contract Exchange {
 
 	address public feeAccount;
 	uint256 public feePercent;
+	address constant ETHER = address(0); // this allows to store Ether in the `tokens` mapping
 	//      token   =>        (user    => balance)
 	mapping(address => mapping(address => uint256)) public tokens;
 
@@ -32,13 +33,13 @@ contract Exchange {
 		feePercent = _feePercent;
 	}
 
-	function depositToken(address _token, uint256 _amount) public {
-		// [X] which token? (address _token)
-		// [X] how much?
-		// [ ] manage deposit
-		// [ ] send tokens to this contract
+	function depositEther() payable public {
+		tokens[ETHER][msg.sender] = tokens[ETHER][msg.sender].add(msg.value);
+		emit Deposit(ETHER, msg.sender, msg.value, tokens[ETHER][msg.sender]);
+	}
 
-		// We allow the exchange to transfer tokens from the user account
+	function depositToken(address _token, uint256 _amount) public {
+		require(_token != ETHER, "Ethers not allowed to be deposited");
 		require(Token(_token).transferFrom(msg.sender, address(this), _amount));
 		tokens[_token][msg.sender] = tokens[_token][msg.sender].add(_amount);
 		emit Deposit(_token, msg.sender, _amount, tokens[_token][msg.sender]);
