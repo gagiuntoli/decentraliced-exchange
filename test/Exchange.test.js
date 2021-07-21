@@ -70,6 +70,12 @@ contract('Exchange', ([deployer, feeAccount, user1]) => {
 				event._balance.toString().should.equal(toWei(0).toString());
 			});
 		});
+
+		describe('failure', () => {
+			it('rejects withdraw do to insufficient balance', async () => {
+				await exchange.withdrawEther(toWei(2), {from: user1}).should.be.rejectedWith(EVM_REJECT);
+			});
+		});
 	});
 
 	describe('depositing Ethers', () => {
@@ -133,6 +139,51 @@ contract('Exchange', ([deployer, feeAccount, user1]) => {
 				await exchange.depositToken(token.address, toWei(10), {from: user1}).should.be.rejectedWith(EVM_REJECT);
 			});
 		});
+	});
 
+	describe('withdraw tokens', () => {
+
+		let result;
+		beforeEach(async () => {
+			await token.approve(exchange.address, toWei(10), { from: user1 });
+			await exchange.depositToken(token.address, toWei(10), { from: user1 });
+			result = await exchange.withdrawToken(token.address, toWei(10), { from: user1 });
+		});
+
+		describe('success', () => {
+
+			it('withdraws token funds', async () => {
+				const balance = await exchange.tokens(token.address, user1);
+				balance.toString().should.equal('0');
+			});
+
+			it('emits a `Withdraw` event', () => {
+				const log = result.logs[0];
+				log.event.should.equal('Withdraw');
+				const event = log.args;
+
+				event._token.toString().should.equal(token.address);
+				event._user.toString().should.equal(user1);
+				event._amount.toString().should.equal(toWei(10).toString());
+				event._balance.toString().should.equal(toWei(0).toString());
+			});
+		});
+
+		describe('failure', () => {
+			it('rejects Ether withdraws', async () => {
+				await exchange.withdrawToken(ETHER_ADDRESS, toWei(10), {from: user1}).should.be.rejectedWith(EVM_REJECT);
+			});
+		});
+	});
+
+	describe('check balances', () => {
+		beforeEach(async () => {
+			await exchange.depositEther({from: user1, value: toWei(10)});
+		});
+
+		it('returns user balances', async () => {
+			const balance = await exchange.balanceOf(ETHER_ADDRESS, user1);
+			balance.toString().should.equal(toWei(10).toString());
+		});
 	});
 });
