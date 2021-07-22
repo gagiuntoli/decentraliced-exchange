@@ -25,9 +25,32 @@ contract Exchange {
 	address constant ETHER = address(0); // this allows to store Ether in the `tokens` mapping
 	//      token   =>        (user    => balance)
 	mapping(address => mapping(address => uint256)) public tokens;
+	mapping(uint256 => _Order) public orders;
+	uint256 public orderCount;
+	mapping(uint256 => bool) public ordersCancelled;
+
+	struct _Order {
+		uint256 id;
+		address user;
+		address tokenGet;
+		uint256 amountGet;
+		address tokenGive;
+		uint256 amountGive;
+		uint256 timestamp;
+	}
 
 	event Deposit(address _token, address _user, uint256 _amount, uint256 _balance);
 	event Withdraw(address _token, address _user, uint256 _amount, uint256 _balance);
+	event Order (
+		uint256 _id,
+		address _user,
+		address _tokenGet,
+		uint256 _amountGet,
+		address _tokenGive,
+		uint256 _amountGive,
+		uint256 _timestamp
+	);
+	event Cancel(uint256 _id);
 
 	constructor (address _feeAccount, uint256 _feePercent) {
 		feeAccount = _feeAccount;
@@ -60,5 +83,20 @@ contract Exchange {
 
 	function balanceOf(address _token, address _user) public view returns(uint256) {
 		return tokens[_token][_user];
+	}
+
+	function makeOrder(address _tokenGet, uint256 _amountGet, address _tokenGive, uint256 _amountGive) public {
+		uint256 timestamp = block.timestamp;
+		orders[orderCount] = _Order(orderCount, msg.sender, _tokenGet, _amountGet, _tokenGive, _amountGive, timestamp);
+		emit Order(orderCount, msg.sender, _tokenGet, _amountGet, _tokenGive, _amountGive, timestamp);
+		orderCount = orderCount.add(1);
+	}
+
+	function cancelOrder(uint256 _id) public {
+		_Order storage order = orders[_id];
+		require(msg.sender == order.user);
+		require(order.id == _id);
+		ordersCancelled[_id] = true;
+		emit Cancel(_id);
 	}
 }

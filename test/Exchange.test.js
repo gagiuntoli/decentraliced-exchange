@@ -12,7 +12,7 @@ require('chai')
 	.use(require('chai-as-promised'))
 	.should()
 
-contract('Exchange', ([deployer, feeAccount, user1]) => {
+contract('Exchange', ([deployer, feeAccount, user1, user2]) => {
 
 	let exchange, token;
 	const feePercent = 10;
@@ -184,6 +184,78 @@ contract('Exchange', ([deployer, feeAccount, user1]) => {
 		it('returns user balances', async () => {
 			const balance = await exchange.balanceOf(ETHER_ADDRESS, user1);
 			balance.toString().should.equal(toWei(10).toString());
+		});
+	});
+
+	describe('Making orders', () => {
+		let result;
+		beforeEach(async()=>{
+			result = await exchange.makeOrder(token.address, toWei(1), ETHER_ADDRESS, toWei(1), {from: user1});
+		});
+
+		it('tracks the newly created order', async () => {
+			const orderCount = await exchange.orderCount();
+			orderCount.toString().should.equal('1');
+			const order = await exchange.orders('0');
+			order.id.toString().should.equal('0', 'id is correct');
+			order.user.toString().should.equal(user1, 'user is correct');
+			order.tokenGet.toString().should.equal(token.address, 'tokenGet is correct');
+			order.amountGet.toString().should.equal(toWei(1).toString(), 'amoungGet is correct');
+			order.tokenGive.toString().should.equal(ETHER_ADDRESS, 'tokenGive is correct');
+			order.amountGive.toString().should.equal(toWei(1).toString(), 'amountGive is correct');
+			order.timestamp.toString().length.should.be.at.least(1, 'timestamp is present');
+		});
+
+		it('emits an `Order` event', () => {
+			const log = result.logs[0];
+			log.event.should.equal('Order');
+			const event = log.args;
+
+			event._id.toString().should.equal('0', '_id is correct');
+			event._user.toString().should.equal(user1, '_user is correct');
+			event._tokenGet.toString().should.equal(token.address, '_tokenGet is correct');
+			event._amountGet.toString().should.equal(toWei(1).toString(), '_amountGet is correct');
+			event._tokenGive.toString().should.equal(ETHER_ADDRESS, '_tokenGive is correct');
+			event._amountGive.toString().should.equal(toWei(1).toString(), '_amountGive is correct');
+			event._timestamp.toString().length.should.at.least(1, '_timestamp is present');
+		});
+	});
+
+	describe('order actions', () => {
+		beforeEach(async() => {
+			await exchange.depositEther({ from: user1, value: toWei(1) });
+			await exchange.makeOrder(token.address, toWei(1), ETHER_ADDRESS, toWei(1), {from: user1});
+		});
+		describe('cancelling orders', () => {
+			describe('success', () => {
+				let result;
+				beforeEach(async() => {
+					result = await exchange.cancelOrder('0', {from: user1});
+				});
+
+				it('updates cancelled orders', async () => {
+					const orderCancelled = await exchange.ordersCancelled(0);
+					orderCancelled.should.equal(true);
+				});
+
+				it('emits a `Cancel` event', () => {
+					const log = result.logs[0];
+					log.event.should.equal('Cancel');
+					const event = log.args;
+
+					event._id.toString().should.equal('0', '_id is correct');
+				});
+			});
+
+			describe('failure', () => {
+				it('rejects invalid order id', async() => {
+					await exchange.cancelOrder('1', {from: user1}).should.be.rejectedWith(EVM_REJECT);
+				});
+
+				it('rejects invalid user', async() => {
+					await exchange.cancelOrder('0', {from: user2}).should.be.rejectedWith(EVM_REJECT);
+				});
+			});
 		});
 	});
 });
