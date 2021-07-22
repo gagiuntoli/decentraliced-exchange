@@ -1,16 +1,5 @@
 // SPDX-License-Identifier: MIT
 
-// TODO:
-// [x] Set the fee account
-// [ ] Deposit Ether
-// [ ] Withdraw Ether
-// [ ] Deposit Tokens
-// [ ] Check balances
-// [ ] Make orders
-// [ ] Cancel order
-// [ ] Fill order
-// [ ] Charge fees
-
 pragma solidity >= 0.8.0 <= 0.8.4;
 
 import './Token.sol';
@@ -28,6 +17,7 @@ contract Exchange {
 	mapping(uint256 => _Order) public orders;
 	uint256 public orderCount;
 	mapping(uint256 => bool) public ordersCancelled;
+	mapping(uint256 => bool) public ordersFilled;
 
 	struct _Order {
 		uint256 id;
@@ -51,6 +41,16 @@ contract Exchange {
 		uint256 _timestamp
 	);
 	event Cancel(uint256 _id);
+	event Trade (
+		uint256 _id,
+		address _user,
+		address _tokenGet,
+		uint256 _amountGet,
+		address _tokenGive,
+		uint256 _amountGive,
+		address _userFill,
+		uint256 _timestamp
+	);
 
 	constructor (address _feeAccount, uint256 _feePercent) {
 		feeAccount = _feeAccount;
@@ -98,5 +98,38 @@ contract Exchange {
 		require(order.id == _id);
 		ordersCancelled[_id] = true;
 		emit Cancel(_id);
+	}
+
+	function fillOrder(uint256 _id) public {
+		require(_id >= 0 && _id < orderCount);
+		require(!ordersCancelled[_id]);
+		require(!ordersFilled[_id]);
+		_Order storage order = orders[_id];
+		trade(order.id);
+		ordersFilled[order.id] = true;
+	}
+
+	function trade(uint256 _id) internal {
+
+		_Order storage order = orders[_id];
+
+		uint256 feeAmount = order.amountGive.mul(feePercent).div(100);
+
+		tokens[order.tokenGet][order.user] = tokens[order.tokenGet][order.user].add(order.amountGet);
+		tokens[order.tokenGet][msg.sender] = tokens[order.tokenGet][msg.sender].sub(order.amountGet);
+		tokens[order.tokenGive][feeAccount] = tokens[order.tokenGive][feeAccount].add(feeAmount);
+		tokens[order.tokenGive][order.user] = tokens[order.tokenGive][order.user].sub(feeAmount);
+		tokens[order.tokenGive][order.user] = tokens[order.tokenGive][order.user].sub(order.amountGive);
+		tokens[order.tokenGive][msg.sender] = tokens[order.tokenGive][msg.sender].add(order.amountGive);
+		emit Trade (
+			order.id,
+			order.user,
+			order.tokenGet,
+			order.amountGet,
+			order.tokenGive,
+			order.amountGive,
+			msg.sender,
+			block.timestamp
+		);
 	}
 }

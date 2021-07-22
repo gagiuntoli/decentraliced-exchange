@@ -223,9 +223,71 @@ contract('Exchange', ([deployer, feeAccount, user1, user2]) => {
 
 	describe('order actions', () => {
 		beforeEach(async() => {
-			await exchange.depositEther({ from: user1, value: toWei(1) });
+			await exchange.depositEther({ from: user1, value: toWei(2) });
+			await token.transfer(user2, toWei(100), {from: deployer});
+			await token.approve(exchange.address, toWei(2), {from: user2});
+			await exchange.depositToken(token.address, toWei(2), {from: user2});
 			await exchange.makeOrder(token.address, toWei(1), ETHER_ADDRESS, toWei(1), {from: user1});
 		});
+
+		describe('filling orders', () => {
+			let result;
+			describe('success', () => {
+				beforeEach(async() => {
+					result = await exchange.fillOrder('0', {from: user2});
+				});
+				it('executes the trade & charges the fees', async () => {
+					let balance;
+					balance = await exchange.balanceOf(token.address, user1);
+					balance.toString().should.equal(toWei(1).toString(), "user1 received 1.0 token");
+					balance = await exchange.balanceOf(ETHER_ADDRESS, user2);
+					balance.toString().should.equal(toWei(1).toString(), "user2 received 1.0 Ether");
+					balance = await exchange.balanceOf(ETHER_ADDRESS, user1);
+					balance.toString().should.equal(toWei(0.9).toString(), "user1 has 0.9 = 2.0 - 1.1 Ethers");
+					balance = await exchange.balanceOf(token.address, user2);
+					balance.toString().should.equal(toWei(1).toString(), "user2 has 1.0 = 2.0 - 1.0 token");
+					balance = await exchange.balanceOf(ETHER_ADDRESS, feeAccount);
+					balance.toString().should.equal(toWei(0.1).toString(), "the fee account has 0.1 Ether");
+				});
+
+				it('updates filled orders', async() => {
+					const orderFilledStatus = await exchange.ordersFilled(0);
+					orderFilledStatus.should.equal(true);
+				});
+
+				it('emits a `Trade` event', async () => {
+					const log = result.logs[0];
+					log.event.should.equal('Trade');
+					const event = log.args;
+
+					event._id.toString().should.equal('0', '_id is correct');
+					event._user.toString().should.equal(user1, '_user is correct');
+					event._tokenGet.toString().should.equal(token.address, '_tokenGet is correct');
+					event._amountGet.toString().should.equal(toWei(1).toString(), '_amountGet is correct');
+					event._tokenGive.toString().should.equal(ETHER_ADDRESS, '_tokenGive is correct');
+					event._amountGive.toString().should.equal(toWei(1).toString(), '_amountGive is correct');
+					event._userFill.toString().should.equal(user2, '_userFill is correct');
+					event._timestamp.toString().length.should.at.least(1, '_timestamp is present');
+				});
+			});
+
+			describe('failure', () => {
+				it('rejects invalid order ids', async() => {
+					await exchange.fillOrder(1).should.be.rejectedWith(EVM_REJECT);
+				});
+
+				it('rejects already filled order', async() => {
+					await exchange.fillOrder('0', {from: user2}).should.be.fulfilled;
+					await exchange.fillOrder('0', {from: user2}).should.be.rejectedWith(EVM_REJECT);
+				});
+
+				it('rejects already cancelled order', async() => {
+					await exchange.cancelOrder('0', {from: user1}).should.be.fulfilled;
+					await exchange.fillOrder('0', {from: user2}).should.be.rejectedWith(EVM_REJECT);
+				});
+			});
+		});
+
 		describe('cancelling orders', () => {
 			describe('success', () => {
 				let result;
