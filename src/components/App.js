@@ -1,6 +1,37 @@
 import './App.css';
+import { useEffect } from 'react';
+import { connect } from 'react-redux';
+import Token from '../abis/Token.json';
+const Web3 = require('web3');
 
-function App() {
+function App(props) {
+
+  const loadBlockchainData = async () => {
+    let web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+    props.web3loaded();
+    const network = await web3.eth.net.getNetworkType();
+    const networkId = await web3.eth.net.getId();
+    const accounts = await web3.eth.getAccounts();
+    const tokenAbi = Token.abi;
+    const tokenNetworks = Token.networks;
+    console.log(Web3.givenProvider)
+    console.log("network", network)
+    console.log("network ID", networkId)
+    console.log("accounts", accounts)
+    console.log("token networks", tokenNetworks)
+    const tokenAddress = tokenNetworks[networkId].address;
+
+    const token = new web3.eth.Contract(tokenAbi, tokenAddress);
+
+    const totalSupply = await token.methods.totalSupply().call();
+    console.log("Total supply:", totalSupply);
+  }
+
+  useEffect (() => {
+    loadBlockchainData();
+  },[]);
+
+
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -90,4 +121,17 @@ function App() {
   );
 }
 
-export default App;
+function mapStateToProps(state) {
+  console.log("mapStateToProps", state)
+  return {
+
+  }
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    web3loaded: () => dispatch({ type: 'WEB3_LOADED' }),
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);
