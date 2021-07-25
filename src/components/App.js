@@ -1,37 +1,74 @@
 import './App.css';
-import { useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { connect, useDispatch } from 'react-redux';
+import Web3 from 'web3';
 import Token from '../abis/Token.json';
-const Web3 = require('web3');
+import Exchange from '../abis/Exchange.json';
+
+import {
+  actionLoadWeb3,
+  actionLoadAccounts,
+  actionLoadToken,
+  actionLoadExchange,
+} from '../reducers';
 
 function App(props) {
 
-  const loadBlockchainData = async () => {
-    let web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
-    props.web3loaded();
-    const network = await web3.eth.net.getNetworkType();
-    const networkId = await web3.eth.net.getId();
-    const accounts = await web3.eth.getAccounts();
-    const tokenAbi = Token.abi;
-    const tokenNetworks = Token.networks;
-    console.log(Web3.givenProvider)
-    console.log("network", network)
-    console.log("network ID", networkId)
-    console.log("accounts", accounts)
-    console.log("token networks", tokenNetworks)
-    const tokenAddress = tokenNetworks[networkId].address;
+  const dispatch = useDispatch();
+  const [accounts_, setAccounts] = useState([])
+  const [web3_, setWeb3] = useState(undefined)
 
-    const token = new web3.eth.Contract(tokenAbi, tokenAddress);
+  useEffect(() => {
 
-    const totalSupply = await token.methods.totalSupply().call();
-    console.log("Total supply:", totalSupply);
-  }
+    const loadBlockchainData = async () => {
 
-  useEffect (() => {
+      const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+
+      dispatch(actionLoadWeb3(web3)); // we load into web3 connection into the store
+      setWeb3(web3);
+
+      const network = await web3.eth.net.getNetworkType();
+      const networkId = await web3.eth.net.getId();
+      const accounts = await web3.eth.getAccounts();
+      dispatch(actionLoadAccounts(accounts));
+      setAccounts(accounts)
+
+      const tokenAbi = Token.abi;
+      const tokenNetworks = Token.networks;
+      console.log(Web3.givenProvider)
+      console.log("network", network)
+      console.log("network ID", networkId)
+      console.log("accounts", accounts)
+      console.log("token networks", tokenNetworks)
+      const tokenAddress = tokenNetworks[networkId].address;
+
+      let token;
+      try {
+        token = new web3.eth.Contract(tokenAbi, tokenAddress);
+        dispatch(actionLoadToken(token));
+      } catch (error) {
+        window.alert("Contract `Token` not deployed to the current network");
+      }
+
+      const totalSupply = await token.methods.totalSupply().call();
+
+      let exchange;
+      try {
+        exchange = new web3.eth.Contract(Exchange.abi, Exchange.networks[networkId].address);
+        dispatch(actionLoadToken(exchange));
+      } catch (error) {
+        window.alert("Contract `Exchange` not deployed to the current network");
+      }
+      console.log("Total supply:", totalSupply);
+    }
+
     loadBlockchainData();
-  },[]);
+  }, [dispatch]);
 
 
+  console.log("App props:", props)
+  console.log("App accounts_:", accounts_)
+  console.log("App web3_:", web3_)
   return (
     <div>
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -124,13 +161,17 @@ function App(props) {
 function mapStateToProps(state) {
   console.log("mapStateToProps", state)
   return {
-
+    web3: state.web3,
+    accounts: state.accounts
   }
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    web3loaded: () => dispatch({ type: 'WEB3_LOADED' }),
+    actionLoadWeb3: (web3) => dispatch(actionLoadWeb3(web3)),
+    actionLoadAccounts: (accounts) => dispatch(actionLoadAccounts(accounts)),
+    actionLoadToken: (contract) => dispatch(actionLoadToken(contract)),
+    actionLoadExchange: (contract) => dispatch(actionLoadExchange(contract)),
   }
 }
 
