@@ -43,7 +43,7 @@ function reducerWeb3(state = {}, action) {
 				web3: action.payload.web3
 			};
 		case 'WEB3_LOAD_ACCOUNT':
-			console.log("reducer reducerWeb3 WEB3_LOAD_ACCOUNT called")
+			console.log("reducer reducerWeb3 WEB3_LOAD_ACCOUNT called",action.payload.accounts)
 			return {
 				...state,
 				accounts: action.payload.accounts
