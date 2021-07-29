@@ -27,7 +27,6 @@ function Navbar(props) {
 }
 
 function mapStateToProps(state) {
-	console.log("mapStateToProps on Navbar", state.reducerWeb3)
 	return {
 		accounts: state.reducerWeb3.accounts
 	}

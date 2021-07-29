@@ -40,7 +40,15 @@ contract Exchange {
 		uint256 _amountGive,
 		uint256 _timestamp
 	);
-	event Cancel(uint256 _id);
+	event Cancel(
+		uint256 _id,
+		address _user,
+		address _tokenGet,
+		uint256 _amountGet,
+		address _tokenGive,
+		uint256 _amountGive,
+		uint256 _timestamp
+	);
 	event Trade (
 		uint256 _id,
 		address _user,
@@ -97,7 +105,15 @@ contract Exchange {
 		require(msg.sender == order.user);
 		require(order.id == _id);
 		ordersCancelled[_id] = true;
-		emit Cancel(_id);
+		emit Cancel(
+			_id,
+			order.user,
+			order.tokenGet,
+			order.amountGet,
+			order.tokenGive,
+			order.amountGive,
+			order.timestamp
+		);
 	}
 
 	function fillOrder(uint256 _id) public {

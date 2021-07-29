@@ -1,5 +1,5 @@
 import './App.css';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { connect, useDispatch } from 'react-redux';
 import Web3 from 'web3';
 import Token from '../abis/Token.json';
@@ -25,7 +25,6 @@ function App(props) {
       const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
       dispatch(actionLoadWeb3(web3)); // we load into web3 connection into the store
 
-      const network = await web3.eth.net.getNetworkType();
       const networkId = await web3.eth.net.getId();
       const accounts = await web3.eth.getAccounts();
       dispatch(actionLoadAccounts(accounts));
@@ -45,6 +44,8 @@ function App(props) {
       } catch (error) {
         window.alert("Contract `Exchange` not deployed on the current network");
       }
+
+
     }
 
     loadBlockchainData();
@@ -54,7 +55,7 @@ function App(props) {
     <div>
       <Navbar />
       {
-        props.exchange != undefined && props.token != undefined ?
+        props.exchange !== undefined && props.token !== undefined ?
           <Content /> :
           <div className="content"></div>
       }
@@ -63,7 +64,6 @@ function App(props) {
 }
 
 function mapStateToProps(state) {
-  console.log("mapStateToProps App", state)
   return {
     web3: state.reducerWeb3.web3,
     accounts: state.reducerWeb3.accounts,
