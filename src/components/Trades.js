@@ -1,35 +1,26 @@
-
-import { useState, useEffect } from 'react';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Web3 from 'web3';
+
+const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 function Trades(props) {
 
-	const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
+	const filledOrders = useSelector(state => state.reducerExchange.filledOrders);
 
-	console.log("Trades props", props)
-	const [filledOrdersFormated, setFilledOrdersFormated] = useState([]);
+	let filledOrdersFormated = [];
 
-	useEffect(() => {
-		if (props.filledOrders !== undefined) {
+	if (filledOrders !== undefined) {
 
-			let filledOrdersFormated_ = [];
-			for (let i = 0; i < props.filledOrders.length; i++) {
-				let val = props.filledOrders[i].returnValues;
-				filledOrdersFormated_.push({
-					time: new Date(val._timestamp * 1000).toLocaleString(),
-					tokenAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGet : val._amountGive, "ether"),
-					ethAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGive : val._amountGet),
-				});
-			}
-			setFilledOrdersFormated(filledOrdersFormated_);
+		for (let i = 0; i < filledOrders.length; i++) {
+			let val = filledOrders[i].returnValues;
+			filledOrdersFormated.push({
+				time: new Date(val._timestamp * 1000).toLocaleString(),
+				tokenAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGet : val._amountGive, "ether"),
+				ethAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGive : val._amountGet),
+			});
 		}
-		console.log("Trades filled orders (useEffect)", filledOrdersFormated)
+	}
 
-	}, [props.filledOrders])
-
-
-		console.log("Trades filled orders", filledOrdersFormated)
 	return (
 		<div className="vertical">
 			<div className="card bg-dark text-white">
@@ -41,8 +32,8 @@ function Trades(props) {
 						<thead>
 							<tr>
 								<th scope="col">Time</th>
-								<th scope="col">BTX</th>
-								<th scope="col">BTX/ETH</th>
+								<th scope="col">BTF</th>
+								<th scope="col">BTF/ETH</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -65,10 +56,4 @@ function Trades(props) {
 	)
 }
 
-function mapStateToProps(state) {
-	return {
-		filledOrders: state.reducerExchange.filledOrders,
-	}
-}
-
-export default connect(mapStateToProps)(Trades);
+export default Trades;
