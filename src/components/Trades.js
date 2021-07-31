@@ -5,22 +5,21 @@ import Web3 from 'web3';
 
 function Trades(props) {
 
-
 	const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 	console.log("Trades props", props)
 	const [filledOrdersFormated, setFilledOrdersFormated] = useState([]);
 
 	useEffect(() => {
-		if (props.filledOrders != undefined) {
+		if (props.filledOrders !== undefined) {
 
 			let filledOrdersFormated_ = [];
 			for (let i = 0; i < props.filledOrders.length; i++) {
 				let val = props.filledOrders[i].returnValues;
 				filledOrdersFormated_.push({
 					time: new Date(val._timestamp * 1000).toLocaleString(),
-					tokenAmount: Web3.utils.fromWei(val._tokenGive == ETHER_ADDRESS ? val._amountGet : val._amountGive, "ether"),
-					ethAmount: Web3.utils.fromWei(val._tokenGive == ETHER_ADDRESS ? val._amountGive : val._amountGet),
+					tokenAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGet : val._amountGive, "ether"),
+					ethAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGive : val._amountGet),
 				});
 			}
 			setFilledOrdersFormated(filledOrdersFormated_);

@@ -1,12 +1,13 @@
 
 import { connect, useDispatch } from 'react-redux';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Trades from './Trades';
 import {
 	actionLoadCancelledOrders,
 	actionLoadAllOrders,
 	actionLoadFilledOrders
 } from '../reducers';
+import OrderBook from './OrderBook';
 
 function Content(props) {
 
@@ -14,7 +15,7 @@ function Content(props) {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			if (props.exchange != undefined) {
+			if (props.exchange !== undefined) {
 				const cancelledOrders = await props.exchange.getPastEvents('Cancel', {fromBlock: '0', toBlock: 'latest'});
 				dispatch(actionLoadCancelledOrders(cancelledOrders));
 
@@ -37,7 +38,7 @@ function Content(props) {
 				<div className="card bg-dark text-white">
 					<div className="card-header">
 						Card Title
-              </div>
+              		</div>
 					<div className="card-body">
 						<p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
 						<a href="/#" className="card-link">Card link</a>
@@ -46,24 +47,14 @@ function Content(props) {
 				<div className="card bg-dark text-white">
 					<div className="card-header">
 						Card Title
-              </div>
+              		</div>
 					<div className="card-body">
 						<p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
 						<a href="/#" className="card-link">Card link</a>
 					</div>
 				</div>
 			</div>
-			<div className="vertical">
-				<div className="card bg-dark text-white">
-					<div className="card-header">
-						Card Title
-              </div>
-					<div className="card-body">
-						<p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-						<a href="/#" className="card-link">Card link</a>
-					</div>
-				</div>
-			</div>
+			<OrderBook />
 			<div className="vertical-split">
 				<div className="card bg-dark text-white">
 					<div className="card-header">

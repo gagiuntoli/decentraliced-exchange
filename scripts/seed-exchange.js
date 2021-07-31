@@ -44,6 +44,7 @@ module.exports = async function(callback) {
 		await exchange.depositToken(token.address, amount, {from: user2});
 		console.log(`Deposited ${amount} of Token from ${user2}`);
 
+		// CANCELLED ORDERS
 		let result;
 		let orderId;
 		result = await exchange.makeOrder(token.address, web3.utils.toWei("100"), ETHER_ADDRESS, web3.utils.toWei("0.1"), {from: user1});
@@ -53,7 +54,7 @@ module.exports = async function(callback) {
 		await exchange.cancelOrder(orderId, {from: user1});
 		console.log(`Cancelled order ${orderId} made from ${user1}`);
 
-
+		// FILLED ORDERS
 		result = await exchange.makeOrder(token.address, web3.utils.toWei("100"), ETHER_ADDRESS, web3.utils.toWei("0.1"), {from: user1});
 		console.log(`Made order from ${user1}`);
 
@@ -81,15 +82,18 @@ module.exports = async function(callback) {
 
 		await timeout(1000)
 
-		for(let i=0; i<10; i++) {
+		// AVAILABLE ORDERS
+		// BUY ORDERS
+		for(let i=1; i<10; i++) {
 			result = await exchange.makeOrder(token.address, web3.utils.toWei(`${10 * i}`), ETHER_ADDRESS, web3.utils.toWei("0.1"), { from: user1 });
-			console.log(`Made order from ${user1}`);
+			console.log(`Buy order from ${user1}`);
 			await timeout(500)
 		}
 
-		for(let i=0; i<10; i++) {
-			result = await exchange.makeOrder(token.address, web3.utils.toWei("0.01"), ETHER_ADDRESS, web3.utils.toWei(`${10 * i}`), { from: user2 });
-			console.log(`Made order from ${user2}`);
+		// SELL ORDERS
+		for(let i=1; i<10; i++) {
+			result = await exchange.makeOrder(ETHER_ADDRESS, web3.utils.toWei("0.01"), token.address, web3.utils.toWei(`${10 * i}`), { from: user2 });
+			console.log(`Sell order from ${user2}`);
 			await timeout(500)
 		}
 	}
