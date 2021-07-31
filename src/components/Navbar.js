@@ -2,8 +2,6 @@ import { connect } from 'react-redux';
 
 function Navbar(props) {
 
-	console.log("Navbar", props)
-
 	return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
         <a className="navbar-brand" href="#/">BTF Token Exchange</a>
