@@ -3,22 +3,29 @@ import Web3 from 'web3';
 
 const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-function Trades(props) {
+function Trades() {
 
-	const filledOrders = useSelector(state => state.reducerExchange.filledOrders);
-
-	let filledOrdersFormated = [];
+	let filledOrders = useSelector(state => state.reducerExchange.filledOrders);
 
 	if (filledOrders !== undefined) {
 
-		for (let i = 0; i < filledOrders.length; i++) {
-			let val = filledOrders[i].returnValues;
-			filledOrdersFormated.push({
-				time: new Date(val._timestamp * 1000).toLocaleString(),
-				tokenAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGet : val._amountGive, "ether"),
-				ethAmount: Web3.utils.fromWei(val._tokenGive === ETHER_ADDRESS ? val._amountGive : val._amountGet),
-			});
-		}
+		filledOrders = filledOrders.map(order => order.returnValues);
+		filledOrders = filledOrders.sort((a,b) => a._timestamp - b._timestamp);
+
+		filledOrders = filledOrders.map(order => {
+			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
+			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);
+			return(
+				{
+					time: new Date(order._timestamp * 1000).toLocaleString(),
+					tokenAmount,
+					etherAmount,
+					tokenPrice: (etherAmount / tokenAmount).toFixed(6)
+				}
+			)
+		});
+	} else {
+		filledOrders = []
 	}
 
 	return (
@@ -38,12 +45,12 @@ function Trades(props) {
 						</thead>
 						<tbody>
 							{
-							filledOrdersFormated.map((val,id) => {
+							filledOrders.map((order,id) => {
 								return (
 									<tr key={id}>
-										<td>{val.time}</td>
-										<td>{val.tokenAmount}</td>
-										<td>{(val.tokenAmount / val.ethAmount).toFixed(2)}</td>
+										<td>{order.time}</td>
+										<td>{order.tokenAmount}</td>
+										<td>{order.tokenPrice}</td>
 									</tr>
 								)
 							})

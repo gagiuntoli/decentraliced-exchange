@@ -5,53 +5,62 @@ const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 function OrderBook(props) {
 
-	const allOrders = useSelector(state => state.reducerExchange.allOrders)
-	const cancelledOrders = useSelector(state => state.reducerExchange.cancelledOrders)
-	const filledOrders = useSelector(state => state.reducerExchange.filledOrders)
+	let allOrders = useSelector(state => state.reducerExchange.allOrders)
+	let cancelledOrders = useSelector(state => state.reducerExchange.cancelledOrders)
+	let filledOrders = useSelector(state => state.reducerExchange.filledOrders)
 
 	let buyOrders = [];
 	let sellOrders = [];
 
 	if (allOrders !== undefined && cancelledOrders !== undefined && filledOrders !== undefined) {
 
-		let availableOrders = []; 
+		allOrders = allOrders.map(order => order.returnValues);
+		cancelledOrders = cancelledOrders.map(order => order.returnValues);
+		filledOrders = filledOrders.map(order => order.returnValues);
+
+		let openedOrders = []; 
 		for (let i = 0; i < allOrders.length; i++) {
-			const order = allOrders[i].returnValues;
+			const order = allOrders[i];
 			let isCancelledOrFilled = false;
 			for (let j = 0; j < cancelledOrders.length; j++) {
-				if (cancelledOrders[j].returnValues._id == order._id) {
+				if (cancelledOrders[j]._id == order._id) {
 					isCancelledOrFilled = true;
 				}
 			}
 			for (let j = 0; j < filledOrders.length; j++) {
-				if (filledOrders[j].returnValues._id == order._id) {
+				if (filledOrders[j]._id == order._id) {
 					isCancelledOrFilled = true;
 				}
 			}
 			if (!isCancelledOrFilled) {
-				availableOrders.push(order)
+				openedOrders.push(order)
 			}
 		}
 
+		for (let i = 0; i < openedOrders.length; i++) {
+			let order = openedOrders[i]
+			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive, "ether");
+			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet, "ether");
+			const tokenPrice = (etherAmount/tokenAmount).toFixed(6);
 
-		for (let i = 0; i < availableOrders.length; i++) {
-			let order = availableOrders[i]
 			if (order._tokenGive === ETHER_ADDRESS) {
 				buyOrders.push({
 					time: new Date(order._timestamp * 1000).toLocaleString(),
-					tokenAmount: Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive, "ether"),
-					etherAmount: Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet, "ether"),
+					tokenAmount,
+					etherAmount,
+					tokenPrice,
 				});
 			} else {
 				sellOrders.push({
 					time: new Date(order._timestamp * 1000).toLocaleString(),
-					tokenAmount: Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive, "ether"),
-					etherAmount: Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet, "ether"),
+					tokenAmount,
+					etherAmount,
+					tokenPrice,
 				});
 			}
 		}
-		buyOrders.sort((a,b) => (a.etherAmount / a.tokenAmount) - (b.etherAmount / b.tokenAmount))
-		sellOrders.sort((a,b) => (a.etherAmount / a.tokenAmount) - (b.etherAmount / b.tokenAmount))
+		buyOrders.sort((a,b) => b.tokenPrice - a.tokenPrice);
+		sellOrders.sort((a,b) => b.tokenPrice - a.tokenPrice)
 	}
 
 	return (
@@ -68,7 +77,7 @@ function OrderBook(props) {
 								return (
 									<tr key={id} className="text-danger">
 										<td>{order.tokenAmount}</td>
-										<td>{(order.tokenAmount / order.etherAmount).toFixed(2)}</td>
+										<td>{order.tokenPrice}</td>
 										<td>{order.etherAmount}</td>
 									</tr>
 								)
@@ -84,7 +93,7 @@ function OrderBook(props) {
 								return (
 									<tr key={id} className="text-success">
 										<td>{order.tokenAmount}</td>
-										<td>{(order.tokenAmount / order.etherAmount).toFixed(2)}</td>
+										<td>{order.tokenPrice}</td>
 										<td>{order.etherAmount}</td>
 									</tr>
 								)
