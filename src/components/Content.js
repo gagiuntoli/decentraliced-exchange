@@ -18,13 +18,16 @@ function Content(props) {
 	useEffect(() => {
 		const fetchData = async () => {
 			if (props.exchange !== undefined) {
-				const cancelledOrders = await props.exchange.getPastEvents('Cancel', {fromBlock: '0', toBlock: 'latest'});
+				let cancelledOrders = await props.exchange.getPastEvents('Cancel', {fromBlock: '0', toBlock: 'latest'});
+				cancelledOrders = cancelledOrders.map(order => order.returnValues);
 				dispatch(actionLoadCancelledOrders(cancelledOrders));
 
-				const filledOrders = await props.exchange.getPastEvents('Trade', {fromBlock: '0', toBlock: 'latest'});
+				let filledOrders = await props.exchange.getPastEvents('Trade', {fromBlock: '0', toBlock: 'latest'});
+				filledOrders = filledOrders.map(order => order.returnValues);
 				dispatch(actionLoadFilledOrders(filledOrders));
 
-				const allOrders = await props.exchange.getPastEvents('Order', {fromBlock: '0', toBlock: 'latest'});
+				let allOrders = await props.exchange.getPastEvents('Order', {fromBlock: '0', toBlock: 'latest'});
+				allOrders = allOrders.map(order => order.returnValues);
 				dispatch(actionLoadAllOrders(allOrders));
 			}
 		}

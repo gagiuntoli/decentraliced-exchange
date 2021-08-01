@@ -8,10 +8,7 @@ function Trades() {
 	let filledOrders = useSelector(state => state.reducerExchange.filledOrders);
 
 	if (filledOrders !== undefined) {
-
-		filledOrders = filledOrders.map(order => order.returnValues);
 		filledOrders = filledOrders.sort((a,b) => a._timestamp - b._timestamp);
-
 		filledOrders = filledOrders.map(order => {
 			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
 			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);

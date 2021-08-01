@@ -12,41 +12,38 @@ function MyTransactions() {
 	const accounts = useSelector(state => state.reducerWeb3.accounts);
 	const myAccount = accounts[0];
 
-	let filledOrdersFormated = [];
 	let openedOrdersFormated = [];
 	if (filledOrders !== undefined && allOrders !== undefined && cancelledOrders !== undefined) {
 
-		filledOrders = filledOrders.filter(order => order.returnValues._user == myAccount || order.returnValues._userFill == myAccount)
-		allOrders = allOrders.filter(order => order.returnValues._user == myAccount || order.returnValues._userFill == myAccount)
-		cancelledOrders = cancelledOrders.filter(order => order.returnValues._user == myAccount || order.returnValues._userFill == myAccount)
+		filledOrders = filledOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
+		allOrders = allOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
+		cancelledOrders = cancelledOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
 
-		for (let i=0; i<filledOrders.length; i++) {
-			const order = filledOrders[i].returnValues;
-
+		filledOrders = filledOrders.map(order => {
 			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
 			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);
 
-			filledOrdersFormated.push(
+			return (
 				{
-					time: order._timestamp,
+					time: new Date(order._timestamp * 1000).toLocaleString(),
 					tokenAmount,
-					tokenPrice: (etherAmount/tokenAmount).toFixed(2),
+					tokenPrice: (etherAmount/tokenAmount).toFixed(6),
 					type: order._tokenGive === ETHER_ADDRESS ? "buy" : "sell",
 				}
 			)
-		}
+		})
 
 		for (let i=0; i<allOrders.length; i++) {
-			const order = allOrders[i].returnValues;
+			const order = allOrders[i];
 
 			let isCancelledOrFilled = false;
 			for (let j = 0; j < cancelledOrders.length; j++) {
-				if (cancelledOrders[j].returnValues._id == order._id) {
+				if (cancelledOrders[j]._id === order._id) {
 					isCancelledOrFilled = true;
 				}
 			}
 			for (let j = 0; j < filledOrders.length; j++) {
-				if (filledOrders[j].returnValues._id == order._id) {
+				if (filledOrders[j]._id === order._id) {
 					isCancelledOrFilled = true;
 				}
 			}
@@ -57,15 +54,19 @@ function MyTransactions() {
 
 				openedOrdersFormated.push(
 					{
-						time: order._timestamp,
+						time: new Date(order._timestamp * 1000).toLocaleString(),
 						tokenAmount,
-						tokenPrice: (etherAmount/tokenAmount).toFixed(2),
+						tokenPrice: (etherAmount/tokenAmount).toFixed(6),
 						type: order._tokenGive === ETHER_ADDRESS ? "buy" : "sell",
 					}
 				)
 			}
 
 		}
+	} else {
+		filledOrders = [];
+		cancelledOrders = [];
+		allOrders = [];
 	}
 
 
@@ -87,10 +88,10 @@ function MyTransactions() {
 							</thead>
 							<tbody>
 								{
-									filledOrdersFormated.map((order, id) => {
+									filledOrders.map((order, id) => {
 										return (
 											<tr key={id} className={order.type === "buy" ? "text-success" : "text-danger"}>
-												<th scope="col">{new Date(order.time * 1000).toLocaleString()}</th>
+												<th scope="col">{order.time}</th>
 												<th scope="col">{order.type === "buy" ? "+" : "-"}{order.tokenAmount}</th>
 												<th scope="col">{order.tokenPrice}</th>
 											</tr>

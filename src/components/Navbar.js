@@ -1,6 +1,9 @@
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
 
-function Navbar(props) {
+function Navbar() {
+
+  const accounts = useSelector(state => state.reducerWeb3.accounts);
+  let myAccount = accounts !== undefined && accounts.length !== 0 ? accounts[0] : "0x0000";
 
 	return (
       <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -12,11 +15,11 @@ function Navbar(props) {
           <li className="nav-item">
             <a
               className="nav-link small"
-              href={`https://etherscan.io/address/${props.accounts !== undefined ? props.accounts[0] : "0x0000000"}`}
+              href={`https://etherscan.io/address/${myAccount}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              	{props.accounts !== undefined ? props.accounts[0] : "0x0000000"}
+              	{myAccount}
             </a>
           </li>
         </ul>
@@ -24,10 +27,4 @@ function Navbar(props) {
 	)
 }
 
-function mapStateToProps(state) {
-	return {
-		accounts: state.reducerWeb3.accounts
-	}
-}
-
-export default connect(mapStateToProps)(Navbar);
+export default Navbar;

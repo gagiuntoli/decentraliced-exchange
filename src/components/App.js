@@ -22,6 +22,10 @@ function App(props) {
 
     const loadBlockchainData = async () => {
 
+      if (window.ethereum) {
+          await window.ethereum.send('eth_requestAccounts');
+          window.web3 = new Web3(window.ethereum);
+      }
       const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
       dispatch(actionLoadWeb3(web3)); // we load into web3 connection into the store
 

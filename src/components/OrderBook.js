@@ -14,21 +14,17 @@ function OrderBook(props) {
 
 	if (allOrders !== undefined && cancelledOrders !== undefined && filledOrders !== undefined) {
 
-		allOrders = allOrders.map(order => order.returnValues);
-		cancelledOrders = cancelledOrders.map(order => order.returnValues);
-		filledOrders = filledOrders.map(order => order.returnValues);
-
 		let openedOrders = []; 
 		for (let i = 0; i < allOrders.length; i++) {
 			const order = allOrders[i];
 			let isCancelledOrFilled = false;
 			for (let j = 0; j < cancelledOrders.length; j++) {
-				if (cancelledOrders[j]._id == order._id) {
+				if (cancelledOrders[j]._id === order._id) {
 					isCancelledOrFilled = true;
 				}
 			}
 			for (let j = 0; j < filledOrders.length; j++) {
-				if (filledOrders[j]._id == order._id) {
+				if (filledOrders[j]._id === order._id) {
 					isCancelledOrFilled = true;
 				}
 			}

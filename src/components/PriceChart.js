@@ -12,7 +12,6 @@ function PriceChart() {
 	let dataPlot = [{data: []}];
 
 	if (filledOrders !== undefined) {
-		filledOrders = filledOrders.map(order => order.returnValues);
 		filledOrders.sort((a,b) => a._timestamp - b._timestamp);
 		filledOrders = filledOrders.map(order => {
 			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
@@ -27,14 +26,15 @@ function PriceChart() {
 			)
 		});
 
-		const lastPrice = filledOrders[filledOrders.length-1].priceToken;
-		const preLastPrice = filledOrders[filledOrders.length-2].priceToken;
+		const lastPrice = filledOrders[filledOrders.length-1].tokenPrice;
+		const preLastPrice = filledOrders[filledOrders.length-2].tokenPrice;
 		if (lastPrice > preLastPrice) {
 			lastPriceShowed = <span className="text-success">&#9650; {lastPrice}</span>
 		} else {
 			lastPriceShowed = <span className="text-danger">&#9660; {lastPrice}</span>
 		}
 
+		// Data format for the Candle Chart
 		//export const dummyData = [
 		//	{
 		//		data: [
@@ -44,6 +44,7 @@ function PriceChart() {
 		//			},
  		//   }
 		//];
+
 		let i = 0;
 		while (i<filledOrders.length) {
 			let order = filledOrders[i];
@@ -66,8 +67,6 @@ function PriceChart() {
 			i+=1;
 		}
 	}
-	console.log("Data Plot", dataPlot)
-	console.log("Dummy Data", dummyData)
 
 	return (
 		<div className="card bg-dark text-white">
@@ -78,7 +77,7 @@ function PriceChart() {
 				<div className="price-chart">
 					<Chart
 						options={chartOptions}
-						series={dataPlot} // dummyData
+						series={dummyData} // dummyData
 						type="candlestick"
 						width="100%"
 						height="100%"
