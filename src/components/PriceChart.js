@@ -9,6 +9,7 @@ function PriceChart() {
 
 	let filledOrders = useSelector(state => state.reducerExchange.filledOrders);
 	let lastPriceShowed = <span className="text-mutted"> &nbsp; 0.0</span>
+	let dataPlot = [{data: []}];
 
 	if (filledOrders !== undefined) {
 		filledOrders = filledOrders.map(order => order.returnValues);
@@ -18,10 +19,10 @@ function PriceChart() {
 			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);
 			return (
 				{
-					time: new Date(order._timestamp * 1000).toLocaleString(),
+					time: order._timestamp,
 					tokenAmount,
 					etherAmount,
-					priceToken: (etherAmount / tokenAmount).toFixed(6)
+					tokenPrice: (etherAmount / tokenAmount).toFixed(6)
 				}
 			)
 		});
@@ -34,8 +35,39 @@ function PriceChart() {
 			lastPriceShowed = <span className="text-danger">&#9660; {lastPrice}</span>
 		}
 
-		let filledOrdersFormatted;
+		//export const dummyData = [
+		//	{
+		//		data: [
+		//			{
+		//				x: new Date(1538778600000),
+		//				y: [6629.81, 6650.5, 6623.04, 6633.33]
+		//			},
+ 		//   }
+		//];
+		let i = 0;
+		while (i<filledOrders.length) {
+			let order = filledOrders[i];
+			const startTime = order.time;
+			const openPrice = order.tokenPrice
+			let maxPrice = openPrice;
+			let minPrice = openPrice;
+			while (i<filledOrders.length && (order.time - startTime < 3600 * 1000)) {
+				maxPrice = (maxPrice < order.tokenPrice) ? order.tokenPrice : maxPrice;
+				minPrice = (minPrice > order.tokenPrice) ? order.tokenPrice : minPrice;
+				order = filledOrders[i];
+				i+=1;
+			}
+			const closePrice = order.tokenPrice
+			const plotPoint = {
+				x: startTime * 1000,
+				y: [openPrice, maxPrice, minPrice, closePrice]
+			}
+			dataPlot[0].data.push(plotPoint)
+			i+=1;
+		}
 	}
+	console.log("Data Plot", dataPlot)
+	console.log("Dummy Data", dummyData)
 
 	return (
 		<div className="card bg-dark text-white">
@@ -46,7 +78,7 @@ function PriceChart() {
 				<div className="price-chart">
 					<Chart
 						options={chartOptions}
-						series={dummyData}
+						series={dataPlot} // dummyData
 						type="candlestick"
 						width="100%"
 						height="100%"
