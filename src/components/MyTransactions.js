@@ -1,5 +1,5 @@
 import {useSelector} from 'react-redux';
-import {Tab, Tabs} from 'react-bootstrap';
+import {Tab, Tabs, Button} from 'react-bootstrap';
 import Web3 from 'web3';
 
 const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -10,9 +10,11 @@ function MyTransactions() {
 	let allOrders = useSelector(state => state.reducerExchange.allOrders);
 	let cancelledOrders = useSelector(state => state.reducerExchange.cancelledOrders);
 	const accounts = useSelector(state => state.reducerWeb3.accounts);
+	const exchange = useSelector(state => state.reducerExchange.contract);
+
 	const myAccount = accounts[0];
 
-	let openedOrdersFormated = [];
+	let openedOrders = [];
 	if (filledOrders !== undefined && allOrders !== undefined && cancelledOrders !== undefined) {
 
 		filledOrders = filledOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
@@ -25,6 +27,7 @@ function MyTransactions() {
 
 			return (
 				{
+					id: order._id,
 					time: new Date(order._timestamp * 1000).toLocaleString(),
 					tokenAmount,
 					tokenPrice: (etherAmount/tokenAmount).toFixed(6),
@@ -52,8 +55,9 @@ function MyTransactions() {
 				const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
 				const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);
 
-				openedOrdersFormated.push(
+				openedOrders.push(
 					{
+						id: order._id,
 						time: new Date(order._timestamp * 1000).toLocaleString(),
 						tokenAmount,
 						tokenPrice: (etherAmount/tokenAmount).toFixed(6),
@@ -67,6 +71,18 @@ function MyTransactions() {
 		filledOrders = [];
 		cancelledOrders = [];
 		allOrders = [];
+	}
+
+	const cancelOrder = (e, id) => {
+		console.log("cancel order", id)
+		exchange.methods.cancelOrder(id).send({from: myAccount})
+		.on("transactionHash", (hash) => {
+			window.alert("cancel order initiated", hash)
+		})
+		.on("error", (error) => {
+			console.log(error)
+			window.alert("there was an error")
+		})
 	}
 
 
@@ -88,9 +104,9 @@ function MyTransactions() {
 							</thead>
 							<tbody>
 								{
-									filledOrders.map((order, id) => {
+									filledOrders.map(order => {
 										return (
-											<tr key={id} className={order.type === "buy" ? "text-success" : "text-danger"}>
+											<tr key={order.id} className={order.type === "buy" ? "text-success" : "text-danger"}>
 												<th scope="col">{order.time}</th>
 												<th scope="col">{order.type === "buy" ? "+" : "-"}{order.tokenAmount}</th>
 												<th scope="col">{order.tokenPrice}</th>
@@ -112,12 +128,12 @@ function MyTransactions() {
 							</thead>
 							<tbody>
 								{
-									openedOrdersFormated.map((order, id) => {
+									openedOrders.map(order => {
 										return (
-											<tr key={id} className={order.type === "buy" ? "text-success" : "text-danger"}>
+											<tr key={order.id} className={order.type === "buy" ? "text-success" : "text-danger"}>
 												<th scope="col">{order.type === "buy" ? "+" : "-"}{order.tokenAmount}</th>
 												<th scope="col">{order.tokenPrice}</th>
-												<th scope="col">cancel</th>
+												<th scope="col"><Button onClick={(e) => cancelOrder(e,order.id)}>x</Button></th>
 											</tr>
 										)
 									})

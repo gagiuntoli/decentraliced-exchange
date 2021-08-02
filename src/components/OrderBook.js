@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import Web3 from 'web3';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
 
@@ -41,6 +42,7 @@ function OrderBook(props) {
 
 			if (order._tokenGive === ETHER_ADDRESS) {
 				buyOrders.push({
+					id: order._id,
 					time: new Date(order._timestamp * 1000).toLocaleString(),
 					tokenAmount,
 					etherAmount,
@@ -48,6 +50,7 @@ function OrderBook(props) {
 				});
 			} else {
 				sellOrders.push({
+					id: order._id,
 					time: new Date(order._timestamp * 1000).toLocaleString(),
 					tokenAmount,
 					etherAmount,
@@ -71,11 +74,17 @@ function OrderBook(props) {
 							{
 							sellOrders.map((order,id) => {
 								return (
-									<tr key={id} className="text-danger">
+									<OverlayTrigger
+										placement="auto"
+										key={order.id}
+										overlay={<Tooltip>Click here to sell</Tooltip>}
+									>
+									<tr key={id} className="order-book-order text-danger">
 										<td>{order.tokenAmount}</td>
 										<td>{order.tokenPrice}</td>
 										<td>{order.etherAmount}</td>
 									</tr>
+									</OverlayTrigger>
 								)
 							})
 							}
@@ -85,13 +94,19 @@ function OrderBook(props) {
 								<th scope="col">ETH</th>
 							</tr>
 							{
-							buyOrders.map((order,id) => {
+							buyOrders.map(order => {
 								return (
-									<tr key={id} className="text-success">
-										<td>{order.tokenAmount}</td>
-										<td>{order.tokenPrice}</td>
-										<td>{order.etherAmount}</td>
-									</tr>
+									<OverlayTrigger
+										placement="auto"
+										key={order.id}
+										overlay={<Tooltip>Click here to buy</Tooltip>}
+									>
+										<tr className="order-book-order text-success">
+											<td>{order.tokenAmount}</td>
+											<td>{order.tokenPrice}</td>
+											<td>{order.etherAmount}</td>
+										</tr>
+									</OverlayTrigger>
 								)
 							})
 							}
