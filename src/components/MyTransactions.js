@@ -92,7 +92,7 @@ function MyTransactions() {
 				My Transactions
             </div>
 			<div className="card-body">
-				<Tabs defaultActiveKey="profile" id="uncontrolled-tab-example" className="mb-3">
+				<Tabs defaultActiveKey="trades" id="uncontrolled-tab-example" className="mb-3">
   					<Tab eventKey="trades" title="Trades">
 						<table className="table table-dark table-sm small">
 							<thead>

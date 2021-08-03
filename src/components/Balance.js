@@ -24,7 +24,6 @@ function Balance() {
 			setEtherWallet(Web3.utils.fromWei(await web3.eth.getBalance(myAccount)));
 		}
 		if (token !== undefined) {
-			console.log("token", token._address)
 			setTokenWallet(Web3.utils.fromWei(await token.methods.balanceOf(myAccount).call()));
 		}
 		if (exchange !== undefined) {
@@ -36,14 +35,13 @@ function Balance() {
 		fetchData();
 	}, [web3])
 
-	console.log("ether amount", etherAmount)
 	return (
 		<div className="card bg-dark text-white">
 			<div className="card-header">
 				Balance
             </div>
 			<div className="card-body">
-				<Tabs defaultActiveKey="profile" id="uncontrolled-tab-example" className="mb-3">
+				<Tabs defaultActiveKey="deposit" id="uncontrolled-tab-example" className="mb-3">
   					<Tab eventKey="deposit" title="Deposit">
 						<table className="table table-dark table-sm small">
 							<thead>
