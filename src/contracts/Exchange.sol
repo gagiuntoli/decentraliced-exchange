@@ -132,11 +132,14 @@ contract Exchange {
 		uint256 feeAmount = order.amountGive.mul(feePercent).div(100);
 
 		tokens[order.tokenGet][order.user] = tokens[order.tokenGet][order.user].add(order.amountGet);
+		tokens[order.tokenGive][order.user] = tokens[order.tokenGive][order.user].sub(order.amountGive);
+
 		tokens[order.tokenGet][msg.sender] = tokens[order.tokenGet][msg.sender].sub(order.amountGet);
+		tokens[order.tokenGive][msg.sender] = tokens[order.tokenGive][msg.sender].add(order.amountGive);
+
 		tokens[order.tokenGive][feeAccount] = tokens[order.tokenGive][feeAccount].add(feeAmount);
 		tokens[order.tokenGive][order.user] = tokens[order.tokenGive][order.user].sub(feeAmount);
-		tokens[order.tokenGive][order.user] = tokens[order.tokenGive][order.user].sub(order.amountGive);
-		tokens[order.tokenGive][msg.sender] = tokens[order.tokenGive][msg.sender].add(order.amountGive);
+
 		emit Trade (
 			order.id,
 			order.user,

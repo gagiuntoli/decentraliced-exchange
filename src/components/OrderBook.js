@@ -9,6 +9,9 @@ function OrderBook(props) {
 	let allOrders = useSelector(state => state.reducerExchange.allOrders)
 	let cancelledOrders = useSelector(state => state.reducerExchange.cancelledOrders)
 	let filledOrders = useSelector(state => state.reducerExchange.filledOrders)
+	const accounts = useSelector(state => state.reducerWeb3.accounts);
+	const exchange = useSelector(state => state.reducerExchange.contract);
+	const myAccount = accounts[0];
 
 	let buyOrders = [];
 	let sellOrders = [];
@@ -22,11 +25,13 @@ function OrderBook(props) {
 			for (let j = 0; j < cancelledOrders.length; j++) {
 				if (cancelledOrders[j]._id === order._id) {
 					isCancelledOrFilled = true;
+					break;
 				}
 			}
 			for (let j = 0; j < filledOrders.length; j++) {
 				if (filledOrders[j]._id === order._id) {
 					isCancelledOrFilled = true;
+					break;
 				}
 			}
 			if (!isCancelledOrFilled) {
@@ -62,6 +67,12 @@ function OrderBook(props) {
 		sellOrders.sort((a,b) => b.tokenPrice - a.tokenPrice)
 	}
 
+	const fillOrder = async (event, orderId) => {
+		event.preventDefault();
+		console.log(orderId)
+		await exchange.methods.fillOrder(orderId).send({ from: myAccount });
+	}
+
 	return (
 		<div className="vertical">
 			<div className="card bg-dark text-white">
@@ -74,17 +85,24 @@ function OrderBook(props) {
 							{
 							sellOrders.map((order,id) => {
 								return (
-									<OverlayTrigger
-										placement="auto"
-										key={order.id}
-										overlay={<Tooltip>Click here to sell</Tooltip>}
-									>
 									<tr key={id} className="order-book-order text-danger">
 										<td>{order.tokenAmount}</td>
 										<td>{order.tokenPrice}</td>
 										<td>{order.etherAmount}</td>
+										<OverlayTrigger
+											placement="auto"
+											key={order.id}
+											overlay={<Tooltip>Click here to buy</Tooltip>}
+										>
+										<td>
+											<button
+												type="submit"
+												className="btn btn-primary btn-block btn-sm bg-success"
+												onClick={(e) => fillOrder(e, order.id)}
+											>&#10004;</button>
+										</td>
+										</OverlayTrigger>
 									</tr>
-									</OverlayTrigger>
 								)
 							})
 							}
@@ -96,17 +114,24 @@ function OrderBook(props) {
 							{
 							buyOrders.map(order => {
 								return (
-									<OverlayTrigger
-										placement="auto"
-										key={order.id}
-										overlay={<Tooltip>Click here to buy</Tooltip>}
-									>
-										<tr className="order-book-order text-success">
+										<tr className="order-book-order text-success" key={order.id}>
 											<td>{order.tokenAmount}</td>
 											<td>{order.tokenPrice}</td>
 											<td>{order.etherAmount}</td>
+											<OverlayTrigger
+												placement="auto"
+												key={order.id}
+												overlay={<Tooltip>Click here to sell</Tooltip>}
+											>
+											<td>
+												<button 
+												type="submit"
+												className="btn btn-primary btn-block btn-sm bg-danger"
+												onClick={(e) => fillOrder(e, order.id)}
+												>&#10004;</button>
+											</td>
+											</OverlayTrigger>
 										</tr>
-									</OverlayTrigger>
 								)
 							})
 							}

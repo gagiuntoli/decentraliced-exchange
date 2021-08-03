@@ -17,7 +17,8 @@ function Trades() {
 					time: new Date(order._timestamp * 1000).toLocaleString(),
 					tokenAmount,
 					etherAmount,
-					tokenPrice: (etherAmount / tokenAmount).toFixed(6)
+					tokenPrice: (etherAmount / tokenAmount).toFixed(6),
+					type: (order._tokenGive == ETHER_ADDRESS) ? "buy" : "sell"
 				}
 			)
 		});
@@ -44,7 +45,7 @@ function Trades() {
 							{
 							filledOrders.map((order,id) => {
 								return (
-									<tr key={id}>
+									<tr key={id} className={order.type === "buy" ? "text-success" : "text-danger"}>
 										<td>{order.time}</td>
 										<td>{order.tokenAmount}</td>
 										<td>{order.tokenPrice}</td>

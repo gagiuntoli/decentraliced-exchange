@@ -11,7 +11,6 @@ function CreateOrder() {
 	const [buyPrice, setBuyPrice] = useState(0);
 	const [sellAmount, setSellAmount] = useState(0);
 	const [sellPrice, setSellPrice] = useState(0);
-	const web3 = useSelector(state => state.reducerWeb3.web3);
 	const accounts = useSelector(state => state.reducerWeb3.accounts);
 	const myAccount = accounts[0];
 	const exchange = useSelector(state => state.reducerExchange.contract);
@@ -84,7 +83,7 @@ function CreateOrder() {
 									className="form-control form-control-sm bg-dark text-white"
 									required />
 								<br />
-								<button type="submit" className="btn btn-primary btn-block btn-sm">Buy</button>
+								<button type="submit" className="btn btn-primary btn-block btn-sm">Sell</button>
 								<br />
 								<small>Total: {(sellAmount * sellPrice).toFixed(6)} ETH</small>
 							</div>
