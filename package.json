@@ -2,6 +2,7 @@
   "name": "decentralized-exchange",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://dashboard.heroku.com/apps/btf-dapp",
   "dependencies": {
     "@openzeppelin/contracts": "^4.2.0",
     "@testing-library/jest-dom": "^5.11.4",
