@@ -2,6 +2,10 @@
 require('babel-register');
 require('babel-polyfill');
 require('dotenv').config();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const infuraKey = process.env.INFURA_ACCESS_TOKEN;
+const privateKeys = process.env.PRIVATE_KEYS;
+console.log(privateKeys.split(","))
 
 // const HDWalletProvider = require('@truffle/hdwallet-provider');
 // const infuraKey = "fj4jll3k.....";
@@ -36,6 +40,14 @@ module.exports = {
      host: "127.0.0.1",     // Localhost (default: none)
      port: 7545,            // Standard Ethereum port (default: none)
      network_id: "*",       // Any network (default: none)
+    },
+    rinkeby: {
+      provider: () => new HDWalletProvider(privateKeys.split(","), `https://rinkeby.infura.io/v3/${infuraKey}`),
+      network_id: 4,       // Rinkeby's id
+      gas: 5500000,        // Rinkeby has a lower block limit than mainnet
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
     // Another network with more advanced options...

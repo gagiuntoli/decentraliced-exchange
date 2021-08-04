@@ -24,3 +24,6 @@ yarn-error.log*
 
 # truffle generate files
 abis
+
+# private keys
+.env
