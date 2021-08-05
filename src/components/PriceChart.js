@@ -77,7 +77,7 @@ function PriceChart() {
 				<div className="price-chart">
 					<Chart
 						options={chartOptions}
-						series={dummyData} // dummyData
+						series={dataPlot} // dummyData
 						type="candlestick"
 						width="100%"
 						height="100%"
