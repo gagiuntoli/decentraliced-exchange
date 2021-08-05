@@ -52,7 +52,7 @@ function PriceChart() {
 			const openPrice = order.tokenPrice
 			let maxPrice = openPrice;
 			let minPrice = openPrice;
-			while (i<filledOrders.length && (order.time - startTime < 3600 * 1000)) {
+			while (i<filledOrders.length && (order.time - startTime < 3600)) {
 				maxPrice = (maxPrice < order.tokenPrice) ? order.tokenPrice : maxPrice;
 				minPrice = (minPrice > order.tokenPrice) ? order.tokenPrice : minPrice;
 				order = filledOrders[i];
