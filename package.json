@@ -2,7 +2,6 @@
   "name": "decentralized-exchange",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://dashboard.heroku.com/apps/btf-dapp",
   "dependencies": {
     "@openzeppelin/contracts": "^4.2.0",
     "@testing-library/jest-dom": "^5.11.4",
@@ -16,6 +15,7 @@
     "bootstrap": "^5.0.2",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
+    "express": "^4.17.1",
     "react": "^17.0.2",
     "react-apexcharts": "^1.3.9",
     "react-bootstrap": "^1.6.1",
