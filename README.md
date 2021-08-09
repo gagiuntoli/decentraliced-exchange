@@ -4,6 +4,11 @@ This project is a decentralized exchange based on Ethereum for buying and
 selling an ERC-20 token called BTF. The project includes the smart contract and
 the frontend client to interact with the smart contract.
 
+The project is based on the [Dapp University
+Bootcamp](https://www.dappuniversity.com/) and includes some of the new React
+functionalities such as Hooks. The state management through Redux is done
+slightly in oder way with a smaller load on the reducers.
+
 The exchange enables:
 
 1. Deposit and withdraw Ether
@@ -18,5 +23,5 @@ The exchange enables:
 
 # Dependencies
 
-You will need the Metamask plugin on your browser in order to administrate your
-private keys.
+You will need the [Metamask](https://metamask.io/) plugin on your browser in
+order to administrate your private keys.
