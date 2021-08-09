@@ -64,7 +64,7 @@ function CreateOrder() {
 								Web3.utils.toWei((sellAmount * sellPrice).toString()),
 								token._address,
 								Web3.utils.toWei(sellAmount.toString())
-								).send({from: myAccount});
+							).send({from: myAccount});
 						}}>
 							<div className="col-12 col-sm pr-sm-2">
 								<h6>BTF Amount</h6>

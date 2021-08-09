@@ -50,6 +50,13 @@ export const actionLoadFilledOrders = (filledOrders) => {
 	}
 }
 
+export const actionLoadOpenOrders = (openOrders) => {
+	return {
+		type: 'OPEN_ORDERS_LOAD',
+		payload: { openOrders }
+	}
+}
+
 // reducers
 function reducerWeb3(state = {}, action) {
 	switch (action.type) {
@@ -101,6 +108,11 @@ function reducerExchange(state = {}, action) {
 			return {
 				...state,
 				filledOrders: action.payload.filledOrders
+			};
+		case 'OPEN_ORDERS_LOAD':
+			return {
+				...state,
+				openOrders: action.payload.openOrders
 			};
 		default:
 			return state;

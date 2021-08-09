@@ -4,11 +4,12 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-function OrderBook(props) {
+function OrderBook() {
 
 	let allOrders = useSelector(state => state.reducerExchange.allOrders)
 	let cancelledOrders = useSelector(state => state.reducerExchange.cancelledOrders)
 	let filledOrders = useSelector(state => state.reducerExchange.filledOrders)
+	let openOrders = useSelector(state => state.reducerExchange.openOrders)
 	const accounts = useSelector(state => state.reducerWeb3.accounts);
 	const exchange = useSelector(state => state.reducerExchange.contract);
 	const myAccount = accounts[0];
@@ -16,31 +17,10 @@ function OrderBook(props) {
 	let buyOrders = [];
 	let sellOrders = [];
 
-	if (allOrders !== undefined && cancelledOrders !== undefined && filledOrders !== undefined) {
+	if (allOrders !== undefined && cancelledOrders !== undefined && filledOrders !== undefined && openOrders !== undefined) {
 
-		let openedOrders = []; 
-		for (let i = 0; i < allOrders.length; i++) {
-			const order = allOrders[i];
-			let isCancelledOrFilled = false;
-			for (let j = 0; j < cancelledOrders.length; j++) {
-				if (cancelledOrders[j]._id === order._id) {
-					isCancelledOrFilled = true;
-					break;
-				}
-			}
-			for (let j = 0; j < filledOrders.length; j++) {
-				if (filledOrders[j]._id === order._id) {
-					isCancelledOrFilled = true;
-					break;
-				}
-			}
-			if (!isCancelledOrFilled) {
-				openedOrders.push(order)
-			}
-		}
-
-		for (let i = 0; i < openedOrders.length; i++) {
-			let order = openedOrders[i]
+		for (let i = 0; i < openOrders.length; i++) {
+			let order = openOrders[i]
 			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive, "ether");
 			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet, "ether");
 			const tokenPrice = (etherAmount/tokenAmount).toFixed(6);
@@ -69,7 +49,6 @@ function OrderBook(props) {
 
 	const fillOrder = async (event, orderId) => {
 		event.preventDefault();
-		console.log(orderId)
 		await exchange.methods.fillOrder(orderId).send({ from: myAccount });
 	}
 

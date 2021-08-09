@@ -9,17 +9,18 @@ function MyTransactions() {
 	let filledOrders = useSelector(state => state.reducerExchange.filledOrders);
 	let allOrders = useSelector(state => state.reducerExchange.allOrders);
 	let cancelledOrders = useSelector(state => state.reducerExchange.cancelledOrders);
+	let openOrders = useSelector(state => state.reducerExchange.openOrders);
 	const accounts = useSelector(state => state.reducerWeb3.accounts);
 	const exchange = useSelector(state => state.reducerExchange.contract);
 
 	const myAccount = accounts[0];
 
-	let openedOrders = [];
-	if (filledOrders !== undefined && allOrders !== undefined && cancelledOrders !== undefined) {
+	if (filledOrders !== undefined && allOrders !== undefined && cancelledOrders !== undefined && openOrders !== undefined) {
 
-		filledOrders = filledOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
-		allOrders = allOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
-		cancelledOrders = cancelledOrders.filter(order => order._user === myAccount || order._userFill === myAccount)
+		filledOrders = filledOrders.filter(order => order._user === myAccount || order._userFill === myAccount);
+		allOrders = allOrders.filter(order => order._user === myAccount || order._userFill === myAccount);
+		cancelledOrders = cancelledOrders.filter(order => order._user === myAccount || order._userFill === myAccount);
+		openOrders = openOrders.filter(order => order._user === myAccount || order._userFill === myAccount);
 
 		filledOrders = filledOrders.map(order => {
 			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
@@ -34,43 +35,25 @@ function MyTransactions() {
 					type: order._tokenGive === ETHER_ADDRESS ? "buy" : "sell",
 				}
 			)
+		});
+
+		openOrders = openOrders.map(order => {
+			const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
+			const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);
+			return ({
+					id: order._id,
+					time: new Date(order._timestamp * 1000).toLocaleString(),
+					tokenAmount,
+					tokenPrice: (etherAmount/tokenAmount).toFixed(6),
+					type: order._tokenGive === ETHER_ADDRESS ? "buy" : "sell",
+				})
 		})
 
-		for (let i=0; i<allOrders.length; i++) {
-			const order = allOrders[i];
-
-			let isCancelledOrFilled = false;
-			for (let j = 0; j < cancelledOrders.length; j++) {
-				if (cancelledOrders[j]._id === order._id) {
-					isCancelledOrFilled = true;
-				}
-			}
-			for (let j = 0; j < filledOrders.length; j++) {
-				if (filledOrders[j]._id === order._id) {
-					isCancelledOrFilled = true;
-				}
-			}
-
-			if (!isCancelledOrFilled) {
-				const tokenAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGet : order._amountGive);
-				const etherAmount = Web3.utils.fromWei(order._tokenGive === ETHER_ADDRESS ? order._amountGive : order._amountGet);
-
-				openedOrders.push(
-					{
-						id: order._id,
-						time: new Date(order._timestamp * 1000).toLocaleString(),
-						tokenAmount,
-						tokenPrice: (etherAmount/tokenAmount).toFixed(6),
-						type: order._tokenGive === ETHER_ADDRESS ? "buy" : "sell",
-					}
-				)
-			}
-
-		}
 	} else {
 		filledOrders = [];
 		cancelledOrders = [];
 		allOrders = [];
+		openOrders = [];
 	}
 
 	const cancelOrder = (e, id) => {
@@ -128,7 +111,7 @@ function MyTransactions() {
 							</thead>
 							<tbody>
 								{
-									openedOrders.map(order => {
+									openOrders.map(order => {
 										return (
 											<tr key={order.id} className={order.type === "buy" ? "text-success" : "text-danger"}>
 												<th scope="col">{order.type === "buy" ? "+" : "-"}{order.tokenAmount}</th>

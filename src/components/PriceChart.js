@@ -1,6 +1,6 @@
 import { useSelector } from 'react-redux';
 import Chart from 'react-apexcharts';
-import { chartOptions, dummyData } from './PriceChart.config';
+import { chartOptions } from './PriceChart.config';
 import Web3 from 'web3';
 
 const ETHER_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -34,17 +34,6 @@ function PriceChart() {
 			lastPriceShowed = <span className="text-danger">&#9660; {lastPrice}</span>
 		}
 
-		// Data format for the Candle Chart
-		//export const dummyData = [
-		//	{
-		//		data: [
-		//			{
-		//				x: new Date(1538778600000),
-		//				y: [6629.81, 6650.5, 6623.04, 6633.33]
-		//			},
- 		//   }
-		//];
-
 		let i = 0;
 		while (i<filledOrders.length) {
 			let order = filledOrders[i];
@@ -53,9 +42,9 @@ function PriceChart() {
 			let maxPrice = openPrice;
 			let minPrice = openPrice;
 			while (i<filledOrders.length && (order.time - startTime < 3600)) {
+				order = filledOrders[i];
 				maxPrice = (maxPrice < order.tokenPrice) ? order.tokenPrice : maxPrice;
 				minPrice = (minPrice > order.tokenPrice) ? order.tokenPrice : minPrice;
-				order = filledOrders[i];
 				i+=1;
 			}
 			const closePrice = order.tokenPrice
@@ -64,7 +53,6 @@ function PriceChart() {
 				y: [openPrice, maxPrice, minPrice, closePrice]
 			}
 			dataPlot[0].data.push(plotPoint)
-			i+=1;
 		}
 	}
 

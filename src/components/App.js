@@ -1,6 +1,6 @@
 import './App.css';
 import { useEffect } from 'react';
-import { connect, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import Web3 from 'web3';
 import Token from '../abis/Token.json';
 import Exchange from '../abis/Exchange.json';
@@ -14,9 +14,11 @@ import {
   actionLoadExchange,
 } from '../reducers';
 
-function App(props) {
+function App() {
 
   const dispatch = useDispatch();
+	const exchange = useSelector(state => state.reducerExchange.contract);
+	const token = useSelector(state => state.reducerToken.contract);
 
   useEffect(() => {
 
@@ -59,7 +61,7 @@ function App(props) {
     <div>
       <Navbar />
       {
-        props.exchange !== undefined && props.token !== undefined ?
+        exchange !== undefined && token !== undefined ?
           <Content /> :
           <div className="content"></div>
       }
@@ -67,22 +69,4 @@ function App(props) {
   );
 }
 
-function mapStateToProps(state) {
-  return {
-    web3: state.reducerWeb3.web3,
-    accounts: state.reducerWeb3.accounts,
-    token: state.reducerToken.contract,
-    exchange: state.reducerExchange.contract,
-  }
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    actionLoadWeb3: (web3) => dispatch(actionLoadWeb3(web3)),
-    actionLoadAccounts: (accounts) => dispatch(actionLoadAccounts(accounts)),
-    actionLoadToken: (contract) => dispatch(actionLoadToken(contract)),
-    actionLoadExchange: (contract) => dispatch(actionLoadExchange(contract)),
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);
+export default App;

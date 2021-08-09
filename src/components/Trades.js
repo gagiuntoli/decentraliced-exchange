@@ -18,7 +18,7 @@ function Trades() {
 					tokenAmount,
 					etherAmount,
 					tokenPrice: (etherAmount / tokenAmount).toFixed(6),
-					type: (order._tokenGive == ETHER_ADDRESS) ? "buy" : "sell"
+					type: (order._tokenGive === ETHER_ADDRESS) ? "buy" : "sell"
 				}
 			)
 		});

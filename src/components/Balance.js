@@ -59,9 +59,12 @@ function Balance() {
 								</tr>
 								<tr>
 									<th>
-										<form className="row" onSubmit={async (e) => {
+										<form className="row" onSubmit={(e) => {
 											e.preventDefault();
-											await exchange.methods.depositEther().send({from: myAccount, value: Web3.utils.toWei(etherAmount.toString())});
+											exchange.methods.depositEther().send({
+												from: myAccount,
+												value: Web3.utils.toWei(etherAmount.toString())
+											}).on('confirmation', () => fetchData());
 										}}>
 											<div className="col-12 col-sm pr-sm-2">
 												<input
@@ -86,8 +89,16 @@ function Balance() {
 									<th>
 										<form className="row" onSubmit={async (e) => {
 											e.preventDefault();
-											await token.methods.approve(exchange._address, Web3.utils.toWei(tokenAmount.toString())).send({ from: myAccount });
-											await exchange.methods.depositToken(token._address, Web3.utils.toWei(tokenAmount.toString())).send({ from: myAccount });
+											await token.methods.approve(
+												exchange._address,
+												Web3.utils.toWei(tokenAmount.toString())
+											).send({from: myAccount});
+
+											exchange.methods.depositToken(
+												token._address,
+												Web3.utils.toWei(tokenAmount.toString())
+											).send({from: myAccount})
+											.on('confirmation', () => fetchData());
 										}}>
 											<div className="col-12 col-sm pr-sm-2">
 												<input
